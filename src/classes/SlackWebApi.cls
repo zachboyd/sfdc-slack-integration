@@ -8,6 +8,12 @@ public with sharing class SlackWebApi {
         @InvocableVariable( label = 'Message' required = true )
         public String text;   
         
+        @InvocableVariable( label = 'Post as User' required = true )
+        public Boolean as_user;
+        
+        @InvocableVariable( label = 'Bot Name' description = 'Name of bot that this message should post as. Post As User must be false.' required = false )
+        public String username;
+        
     }
     
     @InvocableMethod( label = 'Post Message to Slack' )
@@ -41,6 +47,8 @@ public with sharing class SlackWebApi {
             }
             
         }
+        
+        System.debug( 'Body=' + body );
         
         return body;
         
