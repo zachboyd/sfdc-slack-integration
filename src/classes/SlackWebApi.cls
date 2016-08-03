@@ -15,7 +15,7 @@ public with sharing class SlackWebApi {
         
         SlackMessage message = messageList[0];  
         
-		QueueableSlackCall call = new QueueableSlackCall( 
+	QueueableSlackCall call = new QueueableSlackCall( 
             'callout:Slack/chat.postMessage', 
             'POST', 
             createPostBody( message )
@@ -27,11 +27,9 @@ public with sharing class SlackWebApi {
     
     private static String createPostBody( Object obj ) {
         
-        String body = '';
-        
         // go ahead and add token to body. this uses merge parameters so the named credentials
         // must support merge parameters on the http body
-        body = 'token={!$Credential.OAuthToken}';
+        String body = 'token={!$Credential.OAuthToken}';
         
         // Convert object to map so we can iterate properties and append to body
     	Map<String,Object> objMap = (Map<String,Object>) JSON.deserializeUntyped( JSON.serialize( obj ) );
