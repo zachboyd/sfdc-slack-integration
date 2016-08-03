@@ -44,8 +44,6 @@ public with sharing class SlackWebApi {
             
         }
         
-        System.debug( 'Body=' + body );
-        
         return body;
         
     }
