@@ -20,10 +20,11 @@ public with sharing class SlackWebApi {
     public static void postMessage( List<SlackMessage> messageList ) {
         
         if( messageList != null ) {
-                        
-       		for( SlackMessage message : messageList ) {           
+            
+            for( SlackMessage message : messageList ) {           
                 
-                // convert html to slack compliant markdown
+                // convert html to text. this approach could support slack compliant markdown
+                // in the future.
                 message.text = convertHtmlToText( message.text );
                 
                 QueueableSlackCall call = new QueueableSlackCall( 
@@ -31,7 +32,7 @@ public with sharing class SlackWebApi {
                     'POST', 
                     createPostBody( message )
                 );
-                                                                 
+                
                 System.enqueueJob( call );
                 
             } 
@@ -62,6 +63,9 @@ public with sharing class SlackWebApi {
         }
         
         if (node.getNodeType() == DOM.XMLNodeType.ELEMENT) {
+            
+            // TODO if tags should be converted to mark down then 
+            // do that within this block
             
             if( node.getText().trim() != '' ) {                            
                 result += node.getText();
