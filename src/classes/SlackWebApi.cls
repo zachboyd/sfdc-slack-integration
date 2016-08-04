@@ -6,10 +6,10 @@ public with sharing class SlackWebApi {
         public String channel;
         
         @InvocableVariable( label = 'Message' required = true )
-        public String text;   
+        public String text;
         
-        @InvocableVariable( label = 'Post as User' required = true )
-        public Boolean as_user;
+        @InvocableVariable( label = 'As user' required = false description = 'Should this post as the currently logged in user' )
+        public Boolean as_user = true;   
         
         @InvocableVariable( label = 'Bot Name' description = 'Name of bot that this message should post as. Post As User must be false.' required = false )
         public String username;
@@ -19,18 +19,66 @@ public with sharing class SlackWebApi {
     @InvocableMethod( label = 'Post Message to Slack' )
     public static void postMessage( List<SlackMessage> messageList ) {
         
-        SlackMessage message = messageList[0];  
+        if( messageList != null ) {
+                        
+       		for( SlackMessage message : messageList ) {           
+                
+                // convert html to slack compliant markdown
+                message.text = convertHtmlToText( message.text );
+                
+                QueueableSlackCall call = new QueueableSlackCall( 
+                    'callout:Slack/chat.postMessage', 
+                    'POST', 
+                    createPostBody( message )
+                );
+                                                                 
+                System.enqueueJob( call );
+                
+            } 
+            
+        }        
+    }
+    
+    private static String convertHtmlToText( String html ) {
         
-	QueueableSlackCall call = new QueueableSlackCall( 
-            'callout:Slack/chat.postMessage', 
-            'POST', 
-            createPostBody( message )
-        );
-                                                         
-        System.enqueueJob( call );
+        DOM.Document doc = new DOM.Document();
+        
+        try {
+            doc.load( html );   
+            return walkThrough( doc.getRootElement() );            
+        }
+        catch( System.XmlException xe ) {            
+            return xe.getMessage();            
+        }
         
     }
     
+    private static String walkThrough( DOM.XMLNode node ) {
+        
+        String result = '';
+        
+        if (node.getNodeType() == DOM.XMLNodeType.TEXT) {
+            return node.getText();
+        }
+        
+        if (node.getNodeType() == DOM.XMLNodeType.ELEMENT) {
+            
+            if( node.getText().trim() != '' ) {                            
+                result += node.getText();
+            }
+            
+            for( Dom.XMLNode child: node.getChildElements() ) {
+                result += walkThrough( child );
+            }
+            
+            return result;
+            
+        }
+        
+        return '';  //should never reach here 
+        
+    }
+        
     private static String createPostBody( Object obj ) {
         
         // go ahead and add token to body. this uses merge parameters so the named credentials
@@ -42,13 +90,21 @@ public with sharing class SlackWebApi {
         
         if( objMap != null ) {
             
-            for( String key : objMap.keySet() ) {                
-                body += '&' + key + '=' + objMap.get( key );                
+            for( String key : objMap.keySet() ) { 
+                
+                Object val = objMap.get( key );
+                
+                if( val instanceof String ) {
+                    val = EncodingUtil.urlEncode( (String) val, 'UTF-8' );
+                }
+                
+                body += '&' + key + '=' + val;
+                
             }
             
         }
         
-        System.debug( 'Body=' + body );
+        System.debug( body );
         
         return body;
         
