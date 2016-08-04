@@ -1,6 +1,6 @@
 Salesforce Slack Integration
 =======================
-Provides a way to integrate Salesforce with Slack. Example usage includes posting a message to a Slack channel when a post is submitted to a chatter group. This integration can post as the current user which leverages OAuth on a per-user basisc or as a Slack Bot that you can configure in a custom Slack application.
+Provides a way to integrate Salesforce with Slack. Example usage includes posting a message to a Slack channel when a post is submitted to a chatter group. This integration can post as the current user which leverages OAuth on a per-user basis or as a Slack Bot that you can configure in a custom Slack application.
 
 Installation
 ------------
